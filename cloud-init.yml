@@ -1,0 +1,41 @@
+#cloud-config
+
+# Set the hostname
+hostname: CentOS-vm
+manage_etc_hosts: true
+# Configure network interfaces
+network:
+  version: 2
+  ethernets:
+    eth0:
+      addresses:
+        - 58.65.172.77/29
+      gateway4: 58.65.172.73
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+      dhcp4: false
+      routes:
+        - to: 0.0.0.0/0
+          via: 58.65.172.73
+          metric: 100
+      optional: true
+
+users:
+  - name: hamza
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7AzkchvbAHWTacrrT05Dz4HrA/4uckZ0CLFwFl3iAMvNE2+HarsXtV3vQXXFqZE/M6bQiEQWCl8ZJxgEU9QnSaYy/BXP6zGdrt1SUt/RiKd+0BCbuPeRiaunzJXHmb01bavU6zHe6oVvELdfB7iFtjK8HT0pZ6tnpQwC9OuUBpg5aBPBePQHQ/GOi8HjzkGJJX0tkJHK6LtFC8IrDTcMeuSmx/rSOY9N8upezmFja3MnFgBFF0sbTW96EV9ovRu4LEmVPNYtTot1skm6I/PjMuZS2/lZYB8B6FTwWl6yKDbpxXGHU3KDGcujbUquieQcW2PhaBXQtqZW0e/dAVJpj root@proxmox
+
+packages:
+  - ansible
+write_files:
+  - path: /etc/ansible/hosts
+    content: |
+      [local]
+      localhost ansible_connection=local
+      [all:vars]
+      ansible_python_interpreter=/usr/bin/python3
+runcmd:
+  - yum install -y epel-release
+  - yum install -y python3-pip
+  - pip3 install ansible-core
+  - ansible-pull -U https://raw.githubusercontent.com/hamza-rasool/cpanel/main/ansible-cpanel -i /etc/ansible/hosts
